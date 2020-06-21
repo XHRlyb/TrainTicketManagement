@@ -12,6 +12,32 @@ const int N_ = 1e4 + 10;
 const int M = 1e6 + 10;
 
 int Tot(0);
+int isf, tota, totb, totr;
+
+void initialize(string file_name)
+{
+    const char* F1 = file_name.c_str();
+    FILE * f;
+    fstream _file;
+    _file.open(F1, ios::in);
+    if(!_file)
+    {
+        _file.close();
+        f = fopen(F1,"wb+");
+        fseek(f,0,0);
+        int tm_ = 0;
+        fwrite(&tm_,sizeof(int),1,f);
+        fwrite(&tm_,sizeof(int),1,f);
+        fwrite(&tm_,sizeof(int),1,f);
+        fwrite(&tm_,sizeof(int),1,f);
+        fclose(f);
+    }
+    else
+    {
+        _file.close();
+        return;
+    }
+}
 
 template<class Type>
 Type get_kth_data(int k,string file_name)//在file_name文件中取第k个元素
@@ -80,6 +106,22 @@ void add_to_file(Type data,int k,int cnt, string file_name) //在file_name文件
     fseek(f,(k - 1) * sizeof(Type),0);
     for (int i = 1; i <= cnt; i++)
     	fwrite(&data,sizeof(Type),1,f);
+    fclose(f);
+}
+
+template<class Type>
+void add_to_file2(Type *data,int k,int cnt, string file_name) //在file_name文件第k个位置加入data元素
+{
+    const char* F1 = file_name.c_str();
+    FILE * f;
+    fstream _file;
+    _file.open(F1, ios::in);
+    if(!_file)
+        f = fopen(F1,"wb+");
+    else
+        f = fopen(F1, "rb+");
+    fseek(f,(k - 1) * sizeof(Type),0);
+    fwrite(data,sizeof(Type),cnt,f);
     fclose(f);
 }
 
@@ -312,8 +354,12 @@ public:
 BPlusTree<Key, User> user("a.txt", "b.txt", "c.txt");
 BPlusTree<Key, Train> train("d.txt", "e.txt", "f.txt");
 BPlusTree<Key_, data> sta("g.txt", "h.txt", "i.txt");
-bool isf(0);
-int tota(0), totr(0);
+
+/*
+BPlusTree<Key, User> user("a.txt", "b.txt");
+BPlusTree<Key, Train> train("d.txt", "e.txt");
+BPlusTree<Key_, data> sta("g.txt", "h.txt");*/
+
 char q[4], ch;
 User tu;
 Train tt;
@@ -348,8 +394,8 @@ int add_user(){
 		}
 	}
 
-	if (!isf){
-		isf = 1;
+	if (!get_kth_data<bool>(1, "isf.txt")){
+		add_to_file3(1, 1, "isf.txt");
 		t.pri = 10;
 		user.insert(k, t);
 		return 0;
@@ -460,6 +506,7 @@ void modify_profile(){
 						scanf("%d", &t.pri);
 		}
 	}
+
 	if (user.find(c) && user.find(k) && user[c].isLog &&
 		(!strcmp(c.id, k.id) || user[c].pri > user[k].pri) && user[c].pri > t.pri){
 		user.update_data(k, t);
@@ -478,6 +525,7 @@ int add_train(){
 	Key k;
 	Train t;
 	int cnt, len;
+
 	for (ch = getchar(); ch != '\n'; ch = getchar()){
 		if (ch == '-'){
 			ch = getchar();
@@ -596,9 +644,19 @@ int add_train(){
 	}
 
 	Key_ t_;
+/*
+	Key_ tt;
+	strcpy(tt.id, "陕西省安康市");
+	node taa;*/
 
 	for (int i = 1; i <= t.num; i++){
 	//	cl = clock
+		/*
+		if (Tot == 122){
+			cerr << i << ' ' << sta[tt].fir << ' ';
+			taa = get_kth_data<node>(7, "node.txt");
+			cerr << ' ' << taa.id << ' ' << taa.nxt << endl;
+		}*/
 		strcpy(t_.id, t.sta[i]);
 		if (sta.find(t_)){
 			if (!sta[t_].fir){
@@ -610,7 +668,6 @@ int add_train(){
 				strcpy(ta.id, k.id);
 				ta.p = i;
 				ta.nxt = ta.pre = 0;
-
 				add_to_file3(ta, tota, "node.txt");
 			}
 			else{
@@ -685,8 +742,10 @@ void query_train(){
 	}
 	Train t = train[k];
 	if (t.S <= d && d <= t.T){
-		printf("%s %s\n", k.id, t.ty);
+		int *A;
 		int de = d - t.S;
+		A = get_kth_datas<int>(t.r[de] + 1, t.num, "res.txt");
+		printf("%s %s\n", k.id, t.ty);
 		for (int i = 1; i <= t.num; i++){
 			printf("%s ", t.sta[i]);
 			if (i == 1)
@@ -708,8 +767,9 @@ void query_train(){
 			if (i == t.num)
 				puts("x");
 			else
-				printf("%d\n", get_kth_data<int>(t.r[de] + i, "res.txt"));
+				printf("%d\n", A[i - 1]);
 		}
+		delete [] A;
 	}
 	else
 		puts("-1");
@@ -810,23 +870,21 @@ void query_ticket(){
 	Train t;
 	int cnt(0), mn, de, *A;
 	Key ts;
-	
-	for (int i = sta[ks].fir; i; /*???*/){
-		node ii = get_kth_data<node>(i, "node.txt");
+
+	node ii;
+
+	for (int i = sta[ks].fir; i; i = ii.nxt){
+		ii = get_kth_data<node>(i, "node.txt");
 		strcpy(ts.id, ii.id);
 		t = train[ts];
 
 		if (1){
-			if (!t.isr){
-				i = ii.nxt;
+			if (!t.isr)
 				continue;
-			}
 			mn = 1e9;
 			de = d - t.S - t.dm[1][ii.p];
-			if (de < 0 || de > t.T - t.S){
-				i = ii.nxt;
+			if (de < 0 || de > t.T - t.S)
 				continue;
-			}
 			A = get_kth_datas<int>(t.r[de] + ii.p, t.num - ii.p + 1, "res.txt");
 			for (int j = ii.p; j <= t.num; j++){
 				if (!strcmp(t.sta[j], T)){
@@ -922,7 +980,6 @@ char S[K2], T[K2];
 	Key ts, ts_;
 	Key_ t_;
 	node ta;
-	trans Dt;
 	for (int i = sta[kt].fir; i; i = get_kth_data<node>(i, "node.txt").nxt){
 		ta = get_kth_data<node>(i, "node.txt");
 		strcpy(ts.id, ta.id);
@@ -935,46 +992,53 @@ char S[K2], T[K2];
 					break;
 				}
 			}
+
+			trans *Dt = new trans[l];
+
 			for (int j = l - 1; j; j--){
 				
-				strcpy(Dt.id, ta.id);
-				Dt.nxt = 0;
-				Dt.s = t.lv[j];
-				Dt.t = t.ar[l];
-				Dt.S.copy(t.S);
-				Dt.T.copy(t.T);
-				Dt.x = t.dm[1][j];
-				Dt.y = t.dm[0][l];
-				Dt.p = t.pri[l] - t.pri[j];
-				Dt.l = j;
-				Dt.r = l;
+				strcpy(Dt[l - j - 1].id, ta.id);
+				Dt[l - j - 1].nxt = 0;
+				Dt[l - j - 1].s = t.lv[j];
+				Dt[l - j - 1].t = t.ar[l];
+				Dt[l - j - 1].S.copy(t.S);
+				Dt[l - j - 1].T.copy(t.T);
+				Dt[l - j - 1].x = t.dm[1][j];
+				Dt[l - j - 1].y = t.dm[0][l];
+				Dt[l - j - 1].p = t.pri[l] - t.pri[j];
+				Dt[l - j - 1].l = j;
+				Dt[l - j - 1].r = l;
 				
-				add_to_file3(Dt, ++totd, "trans.txt");
-
 				strcpy(t_.id, t.sta[j]);
 				if (!sta[t_].fir_){
 					td = sta[t_];
-					td.fir_ = td.cur_ = totd;
+					td.fir_ = td.cur_ = totd + l - j;
 					sta.update_data(t_, td);
-				//	sta[t_].fir_ = sta[t_].cur_ = totd;
+				//	sta[t_].fir_ = sta[t_].cur_ = totd + l - j;
 				}
 				else{
 					trans zj = get_kth_data<trans>(sta[t_].cur_, "trans.txt");
-					zj.nxt = totd;
+					zj.nxt = totd + l - j;
 					add_to_file3(zj,sta[t_].cur_,"trans.txt");					
 					td = sta[t_];
-					td.cur_ = totd;
+					td.cur_ = totd + l - j;
 					sta.update_data(t_, td);
-				//	sta[t_].cur_ = totd;
+				//	sta[t_].cur_ = totd + l - j;
 				}
 			}
+
+			add_to_file2(Dt, totd + 1, l - 1, "trans.txt");
+
+			totd += l - 1;
 		}
 	}
 
 	Tim s, L, x, e;
 	int de, dt, ans(1e9), mn_, ans_;
-	for (int i = sta[ks].fir; i; i = get_kth_data<node>(i, "node.txt").nxt){
-		strcpy(ts.id, get_kth_data<node>(i, "node.txt").id);
+	node ayhi;
+	for (int i = sta[ks].fir; i; i = ayhi.nxt){
+		ayhi = get_kth_data<node>(i, "node.txt");
+		strcpy(ts.id, ayhi.id);
 		t = train[ts];
 		if (t.isr){
 			l = 0;
@@ -999,7 +1063,6 @@ char S[K2], T[K2];
 				L.b = t.ar[j];
 				strcpy(t_.id, t.sta[j]);
 				for (int k = sta[t_].fir_; k; k = get_kth_data<node>(k, "trans.txt").nxt){
-					node ayhi = get_kth_data<node>(i, "node.txt");
 					trans dyhk = get_kth_data<trans>(k, "trans.txt");
 					if (!strcmp(dyhk.id, ayhi.id))
 						continue;
@@ -1081,8 +1144,9 @@ char S[K2], T[K2];
 	else
 		puts("0");
 
-	for (int i = sta[kt].fir; i; i = get_kth_data<node>(i,"node.txt").nxt){
-		strcpy(ts.id, get_kth_data<node>(i,"node.txt").id);
+	for (int i = sta[kt].fir; i; i = ayhi.nxt){
+		ayhi = get_kth_data<node>(i,"node.txt");
+		strcpy(ts.id, ayhi.id);
 		t = train[ts];
 		if (t.isr){
 			for (int j = 1; j <= t.num; j++){
@@ -1110,8 +1174,6 @@ struct Order{
 		nxt = pre_ = nxt_ = 0;
 	}
 };//order[M];
-
-int totb(0);
 
 void buy_ticket(){
 	char us[K1], tr[K1], S[K2], T[K2];
@@ -1188,7 +1250,8 @@ void buy_ticket(){
 				return;
 			}
 			totb++;
-			Order od = get_kth_data<Order>(totb, "order.txt");
+			Order od;
+			od.nxt = 0;
 			strcpy(od.id, tr);
 			strcpy(od.S, S);
 			strcpy(od.T, T);
@@ -1270,10 +1333,9 @@ void query_order(){
 		return;
 	}
 	printf("%d\n", user[k].cnt);
-	for (int i = user[k].fir; i; /*???*/){
-		Order ii = get_kth_data<Order>(i,"order.txt");
-		if (Tot == 731)
-			cerr << i << ' ' << ii.nxt << endl;
+	Order ii;
+	for (int i = user[k].fir; i;){
+		ii = get_kth_data<Order>(i,"order.txt");
 		if (ii.ty == 0)
 			printf("[success] ");
 		else
@@ -1433,12 +1495,23 @@ void exit(){
 }
 
 int main(){
+	initialize("init.txt");
+	isf = get_kth_data<int>(1, "init.txt");
+	tota = get_kth_data<int>(2, "init.txt");
+	totb = get_kth_data<int>(3, "init.txt");
+	totr = get_kth_data<int>(4, "init.txt");
+
+//	freopen("1.in", "r", stdin);
+//	freopen("1_.out", "w", stdout);
 	char s[20];
+
 	while (scanf("%s", s) != EOF){
 		Tot++;
+//		if (user.find(k) && Tot <= 50)
+//			cerr << Tot - 1 << ' ' << user[k].pri << endl;
 //		printf("%d\n", Tot);
-		cerr << Tot << endl;
-//		if (Tot == 625)
+//		cerr << Tot << endl;
+//		if (Tot == 154)
 //			cerr << '!';
 		switch (s[0]){
 			case 'a':
@@ -1505,5 +1578,9 @@ int main(){
 		}
 	}
 
+	add_to_file3(isf, 1, "init.txt");
+	add_to_file3(tota, 2, "init.txt");
+	add_to_file3(totb, 3, "init.txt");
+	add_to_file3(totr, 4, "init.txt");
 	return 0;
 }
