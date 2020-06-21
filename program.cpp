@@ -1431,8 +1431,6 @@ void exit(){
 }
 
 int main(){
-	freopen("1.in", "r", stdin);
-	freopen("1_.out", "w", stdout);
 	char s[20];
 	while (scanf("%s", s) != EOF){
 		Tot++;
