@@ -11,6 +11,8 @@ const int N = 110;
 const int N_ = 1e4 + 10;
 const int M = 1e6 + 10;
 
+int Tot(0);
+
 template<class Type>
 Type get_kth_data(int k,string file_name)//在file_name文件中取第k个元素
 {
@@ -44,8 +46,6 @@ void add_to_file3(Type data,int k,string file_name) //在file_name文件第k个�
     fwrite(&data,sizeof(Type),1,f);
     fclose(f);
 }
-
-int Tot(0);
 
 struct tim{
 	int h, m;
@@ -175,7 +175,7 @@ struct node{
 			id[i] = '\0';
 		nxt = pre = 0;
 	}
-}a[M];
+};//a[M];
 
 class data{
 public:
@@ -258,9 +258,6 @@ public:
 	}
 };
 
-//int res[N * M];
-int totr(0);
-
 class Train{
 public:
 	int num, seat, pri[N], r[N], t[N], s[N], p[N], dm[2][N];
@@ -280,7 +277,7 @@ BPlusTree<Key, User> user("a.txt", "b.txt");
 BPlusTree<Key, Train> train("c.txt", "d.txt");
 BPlusTree<Key_, data> sta("e.txt", "f.txt");
 bool isf(0);
-int tota(0);
+int tota(0), totr(0);
 char q[4], ch;
 User tu;
 Train tt;
@@ -330,7 +327,9 @@ int add_user(){
 
 struct Log{
 	Key k;
-}lo[M];
+
+    Log(){}
+}tl;
 
 int totl(0);
 
@@ -356,8 +355,10 @@ int Login(){
 		tu = user[k];
 		tu.isLog = 1;
 		user.update_data(k, tu);
-
-		lo[++totl].k = k;
+        
+        tl.k = k;
+		add_to_file3(tl, ++totl, "lo.txt");
+	//  lo[++totl].k = k;
 		return 0;
 	}
 	return -1;
@@ -557,7 +558,7 @@ int add_train(){
 	}
 
 	Key_ t_;
-	
+
 	for (int i = 1; i <= t.num; i++){
 		strcpy(t_.id, t.sta[i]);
 		if (sta.find(t_)){
@@ -566,14 +567,23 @@ int add_train(){
 				td.fir = td.cur = ++tota;
 				sta.update_data(t_, td);
 			//	sta[t_].fir = sta[t_].cur = ++tota;
-				strcpy(a[tota].id, k.id);
-				a[tota].p = i;
+				node ta;
+				strcpy(ta.id, k.id);
+				ta.p = i;
+				ta.nxt = ta.pre = 0;
+				add_to_file3(ta, tota, "node.txt");
 			}
 			else{
-				a[sta[t_].cur].nxt = ++tota;
-				strcpy(a[tota].id, k.id);
-				a[tota].p = i;
-				a[tota].pre = sta[t_].cur;
+				node ta;
+				ta = get_kth_data<node>(sta[t_].cur, "node.txt");
+				ta.nxt = ++tota;
+				add_to_file3(ta, sta[t_].cur, "node.txt");
+				node tb;
+				strcpy(tb.id, k.id);
+				tb.p = i;
+				tb.pre = sta[t_].cur;
+				tb.nxt = 0;
+				add_to_file3(tb, tota, "node.txt");
 
 				td = sta[t_];
 				td.cur = tota;
@@ -584,8 +594,11 @@ int add_train(){
 		else{
 			++tota;
 			sta.insert(t_, data(tota, tota, 0, 0));
-			strcpy(a[tota].id, k.id);
-			a[tota].p = i;
+			node ta;
+			strcpy(ta.id, k.id);
+			ta.p = i;
+			ta.nxt = ta.pre = 0;
+			add_to_file3(ta, tota, "node.txt");
 		}
 		t.p[i] = tota;
 	}
@@ -778,7 +791,7 @@ void query_ticket(){
 					ans[cnt].mn = mn;
 					ans[cnt].S = d;
 					ans[cnt].T = d + (t.dm[0][j] - t.dm[1][ii.p]);
-					ans[cnt].x = ((!fl) ? (ans[cnt].T - ans[cnt].S) * 24 * 60 + (ans[cnt].t - ans[cnt].s) : t.pri[j] - t.pri[a[i].p]);
+					ans[cnt].x = ((!fl) ? (ans[cnt].T - ans[cnt].S) * 24 * 60 + (ans[cnt].t - ans[cnt].s) : t.pri[j] - t.pri[ii.p]);
 					break;
 				}
 				mn = min(mn, get_kth_data<int>(t.r[de] + j, "res.txt"));
@@ -810,7 +823,7 @@ struct trans{
 	trans(){
 		nxt = 0;
 	}
-}d[M];
+}dt;
 
 struct Trans{
 	char id[K1], S[K2], T[K2];
@@ -875,6 +888,7 @@ char S[K2], T[K2];
 				}
 			}
 			for (int j = l - 1; j; j--){
+				
 				strcpy(Dt.id, ta.id);
 				Dt.nxt = 0;
 				Dt.s = t.lv[j];
@@ -971,7 +985,7 @@ char S[K2], T[K2];
 						ans2.t = e;
 						mn_ = 1e9;
 						int pr = train[ts_].r[dt];  /*?????*/
-						for (int o = d[k].l; o < d[k].r; o++)
+						for (int o = dyhk.l; o < dyhk.r; o++)
 							mn_ = min(mn_, get_kth_data<int>(pr + o, "res.txt"));
 						ans2.x = mn_;
 					}
@@ -993,7 +1007,7 @@ char S[K2], T[K2];
 						ans2.t = e;
 						mn_ = 1e9;
 						int pr = train[ts_].r[dt]; /*?????*/
-						for (int o = d[k].l; o < d[k].r; o++)
+						for (int o = dyhk.l; o < dyhk.r; o++)
 							mn_ = min(mn_, get_kth_data<int>(pr + o, "res.txt"));
 						ans2.x = mn_;
 					}
@@ -1255,9 +1269,9 @@ int refund_ticket(){
 		return -1;
 	Key ts;
 	int rt;
-	for (int i = user[k].fir, j = 1; i; j++)
+	for (int i = user[k].fir, j = 1; i; j++){
+        Order ii = get_kth_data<Order>(i,"order.txt");
 		if (j == x){
-			Order ii = get_kth_data<Order>(i,"order.txt");
 			if (ii.ty == 2)
 				return -1;
 			if (ii.ty){
@@ -1343,21 +1357,25 @@ int refund_ticket(){
 				j = jj.nxt_;
 			}
 			return 0;
-			i = ii.nxt;
-		}
+        }
+		i = ii.nxt;
+    }
 	return -1;
 }
 
 int clean(){
-
+	user.clear();
+	train.clear();
+	sta.clear();
 	return 0;
 }
 
 void exit(){
 	for (int i = 1; i <= totl; i++){
-		tu = user[lo[i].k];
+		tl = get_kth_data<Log>(i, "lo.txt");
+		tu = user[tl.k];
 		tu.isLog = 0;
-		user.update_data(lo[i].k, tu);
+		user.update_data(tl.k, tu);
 //		user[lo[i].k].isLog = 0;
 	}		
 	totl = 0;
@@ -1365,13 +1383,15 @@ void exit(){
 }
 
 int main(){
-	freopen("1.in", "r", stdin);
-	freopen("1_.out", "w", stdout);
+	freopen("0.in", "r", stdin);
+	freopen("0_.out", "w", stdout);
 	char s[20];
 	while (scanf("%s", s) != EOF){
 		Tot++;
 //		printf("%d\n", Tot);
 //		cerr << Tot << endl;
+		if (Tot == 625)
+			cerr << '!';
 		switch (s[0]){
 			case 'a':
 				if (s[4] == 'u')
@@ -1436,5 +1456,6 @@ int main(){
 			//	return 0;
 		}
 	}
+
 	return 0;
 }
