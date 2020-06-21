@@ -32,6 +32,25 @@ Type get_kth_data(int k,string file_name)//在file_name文件中取第k个元素
 }
 
 template<class Type>
+Type* get_kth_datas(int k,int cnt,string file_name)//在file_name文件中取第k个元素
+{
+    const char* F1 = file_name.c_str();
+    FILE * f;
+    Type* out = new Type [cnt];
+    fstream _file;
+    _file.open(F1, ios::in);
+    if(!_file)
+        f = fopen(F1,"wb+");
+    else
+        f = fopen(F1, "rb+");
+    fseek(f,(k - 1) * sizeof(Type),0);
+    fread(out,sizeof(Type),cnt,f);
+    fclose(f);
+    return out;
+}
+
+
+template<class Type>
 void add_to_file3(Type data,int k,string file_name) //在file_name文件第k个位置加入data元素
 {
     const char* F1 = file_name.c_str();
@@ -44,6 +63,23 @@ void add_to_file3(Type data,int k,string file_name) //在file_name文件第k个�
         f = fopen(F1, "rb+");
     fseek(f,(k - 1) * sizeof(Type),0);
     fwrite(&data,sizeof(Type),1,f);
+    fclose(f);
+}
+
+template<class Type>
+void add_to_file(Type data,int k,int cnt, string file_name) //在file_name文件第k个位置加入data元素
+{
+    const char* F1 = file_name.c_str();
+    FILE * f;
+    fstream _file;
+    _file.open(F1, ios::in);
+    if(!_file)
+        f = fopen(F1,"wb+");
+    else
+        f = fopen(F1, "rb+");
+    fseek(f,(k - 1) * sizeof(Type),0);
+    for (int i = 1; i <= cnt; i++)
+    	fwrite(&data,sizeof(Type),1,f);
     fclose(f);
 }
 
@@ -531,12 +567,14 @@ int add_train(){
 
 	if (train.find(k))
 		return -1;
-	
+
 	cnt = t.T - t.S;
+	add_to_file(t.seat, totr + 1, (cnt + 1) * t.num, "res.txt");
 	for (int i = 0; i <= cnt; i++){
 		t.r[i] = totr;
-		for (int j = 1; j <= t.num; j++)
-			add_to_file3(t.seat, ++totr, "res.txt");
+		totr += t.num;
+	//	for (int j = 1; j <= t.num; j++)
+	//		add_to_file3(t.seat, ++totr, "res.txt");
 		//	t.res[i][j] = t.seat;
 	}
 
@@ -560,6 +598,7 @@ int add_train(){
 	Key_ t_;
 
 	for (int i = 1; i <= t.num; i++){
+	//	cl = clock
 		strcpy(t_.id, t.sta[i]);
 		if (sta.find(t_)){
 			if (!sta[t_].fir){
@@ -571,6 +610,7 @@ int add_train(){
 				strcpy(ta.id, k.id);
 				ta.p = i;
 				ta.nxt = ta.pre = 0;
+
 				add_to_file3(ta, tota, "node.txt");
 			}
 			else{
@@ -768,20 +808,26 @@ void query_ticket(){
 	}
 
 	Train t;
-	int cnt(0), mn, de;
+	int cnt(0), mn, de, *A;
 	Key ts;
+	
 	for (int i = sta[ks].fir; i; /*???*/){
 		node ii = get_kth_data<node>(i, "node.txt");
 		strcpy(ts.id, ii.id);
 		t = train[ts];
 
 		if (1){
-			if (!t.isr)
+			if (!t.isr){
+				i = ii.nxt;
 				continue;
+			}
 			mn = 1e9;
 			de = d - t.S - t.dm[1][ii.p];
-			if (de < 0 || de > t.T - t.S)
+			if (de < 0 || de > t.T - t.S){
+				i = ii.nxt;
 				continue;
+			}
+			A = get_kth_datas<int>(t.r[de] + ii.p, t.num - ii.p + 1, "res.txt");
 			for (int j = ii.p; j <= t.num; j++){
 				if (!strcmp(t.sta[j], T)){
 					strcpy(ans[++cnt].id, ii.id);
@@ -794,11 +840,13 @@ void query_ticket(){
 					ans[cnt].x = ((!fl) ? (ans[cnt].T - ans[cnt].S) * 24 * 60 + (ans[cnt].t - ans[cnt].s) : t.pri[j] - t.pri[ii.p]);
 					break;
 				}
-				mn = min(mn, get_kth_data<int>(t.r[de] + j, "res.txt"));
+				mn = min(mn, A[j - ii.p]);
 			}
 		}
+		delete [] A;
 		i = ii.nxt;
 	}
+
 	sort(ans + 1, ans + 1 + cnt);
 	printf("%d\n", cnt);
 	for (int i = 1; i <= cnt; i++){
@@ -1383,11 +1431,15 @@ void exit(){
 }
 
 int main(){
+	freopen("1.in", "r", stdin);
+	freopen("1_.out", "w", stdout);
 	char s[20];
 	while (scanf("%s", s) != EOF){
 		Tot++;
 //		printf("%d\n", Tot);
 //		cerr << Tot << endl;
+//		if (Tot == 625)
+//			cerr << '!';
 		switch (s[0]){
 			case 'a':
 				if (s[4] == 'u')
