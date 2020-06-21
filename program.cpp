@@ -902,7 +902,6 @@ void query_ticket(){
 			}
 		}
 		delete [] A;
-		i = ii.nxt;
 	}
 
 	sort(ans + 1, ans + 1 + cnt);
@@ -1513,8 +1512,8 @@ int main(){
 	totb = get_kth_data<int>(3, "init.txt");
 	totr = get_kth_data<int>(4, "init.txt");
 
-	freopen("34.in", "r", stdin);
-	freopen("34_.out", "w", stdout);
+//	freopen("34.in", "r", stdin);
+//	freopen("34_.out", "w", stdout);
 	char s[20];
 
 	while (scanf("%s", s) != EOF){
