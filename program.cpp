@@ -1,3 +1,4 @@
+//#pragma GCC optimize(2)
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -400,12 +401,9 @@ int add_user(){
 		user.insert(k, t);
 		return 0;
 	}
-	if (user.find(cur) && !user.find(k)){
-	 	User cc = user[cur];
-		if(cc.isLog && t.pri < cc.pri){
-			user.insert(k, t);
-			return 0;
-		}
+	if (user.find(cur) && !user.find(k) && user[cur].isLog && t.pri < user[cur].pri){
+		user.insert(k, t);
+		return 0;
 	}
 	return -1;
 }
@@ -435,18 +433,16 @@ int Login(){
 		}
 	}
 
-	if (user.find(k)){ 
+	if (user.find(k) && !user[k].isLog && !strcmp(user[k].pas, pas)){
+	//	user[k].isLog = 1;
 		tu = user[k];
-		if (!tu.isLog && !strcmp(tu.pas, pas)){
-		//	user[k].isLog = 1;
-			tu.isLog = 1;
-			user.update_data(k, tu);
-			
-			tl.k = k;
-			add_to_file3(tl, ++totl, "lo.txt");
-		//  lo[++totl].k = k;
-			return 0;
-		}
+		tu.isLog = 1;
+		user.update_data(k, tu);
+        
+        tl.k = k;
+		add_to_file3(tl, ++totl, "lo.txt");
+	//  lo[++totl].k = k;
+		return 0;
 	}
 	return -1;
 }
@@ -480,12 +476,9 @@ void query_profile(){
 		}
 	}
 
-	if (user.find(c) && user.find(k)){
-		User cc = user[c];
-		User kk = user[k];
-		if (cc.isLog && (!strcmp(c.id, k.id) || cc.pri > kk.pri)){
-			printf("%s %s %s %d\n", k.id, kk.name, kk.mail, kk.pri);
-		}
+	if (user.find(c) && user.find(k) && user[c].isLog && 
+		(!strcmp(c.id, k.id) || user[c].pri > user[k].pri)){
+		printf("%s %s %s %d\n", k.id, user[k].name, user[k].mail, user[k].pri);
 	}
 	else{
 		puts("-1");
@@ -515,13 +508,10 @@ void modify_profile(){
 		}
 	}
 
-	if (user.find(c) && user.find(k)){
-		User cc = user[c];
-		User kk = user[k];
-		if (cc.isLog && (!strcmp(c.id, k.id) || cc.pri > kk.pri) && cc.pri > t.pri){
-			user.update_data(k, t);
-			printf("%s %s %s %d\n", k.id, kk.name,kk.mail, kk.pri);
-		}
+	if (user.find(c) && user.find(k) && user[c].isLog &&
+		(!strcmp(c.id, k.id) || user[c].pri > user[k].pri) && user[c].pri > t.pri){
+		user.update_data(k, t);
+		printf("%s %s %s %d\n", k.id, user[k].name, user[k].mail, user[k].pri);
 	}
 	else{
 		puts("-1");
@@ -1294,17 +1284,20 @@ void buy_ticket(){
 			tu.cnt++;
 			user.update_data(c, tu);
 		//	user[c].cnt++;
-			if (!tu.fir){
+			if (!user[c].fir){
+				tu = user[c];
 				tu.fir = tu.cur = totb;
 				user.update_data(c, tu);
 			//	user[c].fir = user[c].cur = totb;
 			}
 			else{
+				tu = user[c];
 				tu.fir = totb;
 				user.update_data(c, tu);
 			//	user[c].fir = totb;
 				od.nxt = user[c].cur;
 
+				tu = user[c];
 				tu.cur = totb;
 				user.update_data(c, tu);
 			//	user[c].cur = totb;
@@ -1345,10 +1338,9 @@ void query_order(){
 		puts("-1");
 		return;
 	}
-	User kk = user[k];
-	printf("%d\n", kk.cnt);
+	printf("%d\n", user[k].cnt);
 	Order ii;
-	for (int i = kk.fir; i;){
+	for (int i = user[k].fir; i;){
 		ii = get_kth_data<Order>(i,"order.txt");
 		if (ii.ty == 0)
 			printf("[success] ");
@@ -1388,20 +1380,15 @@ int refund_ticket(){
 		}
 	}
 	strcpy(k.id, id);
-	
-		User kk = user[k];
-	if (!user.find(k))
-	{ 
-		kk = user[k];
-		if (!kk.isLog)
+
+	if (!user.find(k) || !user[k].isLog)
 		return -1;
-	}
-	if (x < 1 || x > kk.cnt)
+	if (x < 1 || x > user[k].cnt)
 		return -1;
 	Key ts;
 	int rt;
 	Order ii;
-	for (int i = kk.fir, j = 1; i; j++, i = ii.nxt){
+	for (int i = user[k].fir, j = 1; i; j++, i = ii.nxt){
         ii = get_kth_data<Order>(i,"order.txt");
 		if (j == x){
 			if (ii.ty == 2)
@@ -1526,8 +1513,8 @@ int main(){
 	totb = get_kth_data<int>(3, "init.txt");
 	totr = get_kth_data<int>(4, "init.txt");
 
-//	freopen("34.in", "r", stdin);
-//	freopen("34_.out", "w", stdout);
+//	freopen("1.in", "r", stdin);
+//	freopen("1_.out", "w", stdout);
 	char s[20];
 
 	while (scanf("%s", s) != EOF){
@@ -1535,7 +1522,7 @@ int main(){
 //		if (user.find(k) && Tot <= 50)
 //			cerr << Tot - 1 << ' ' << user[k].pri << endl;
 //		printf("%d\n", Tot);
-		cerr << Tot << endl;
+//		cerr << Tot << endl;
 //		if (Tot == 154)
 //			cerr << '!';
 		switch (s[0]){
