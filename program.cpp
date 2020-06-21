@@ -400,9 +400,12 @@ int add_user(){
 		user.insert(k, t);
 		return 0;
 	}
-	if (user.find(cur) && !user.find(k) && user[cur].isLog && t.pri < user[cur].pri){
-		user.insert(k, t);
-		return 0;
+	if (user.find(cur) && !user.find(k)){
+	 	User cc = user[cur];
+		if(cc.isLog && t.pri < cc.pri){
+			user.insert(k, t);
+			return 0;
+		}
 	}
 	return -1;
 }
@@ -432,16 +435,18 @@ int Login(){
 		}
 	}
 
-	if (user.find(k) && !user[k].isLog && !strcmp(user[k].pas, pas)){
-	//	user[k].isLog = 1;
+	if (user.find(k)){ 
 		tu = user[k];
-		tu.isLog = 1;
-		user.update_data(k, tu);
-        
-        tl.k = k;
-		add_to_file3(tl, ++totl, "lo.txt");
-	//  lo[++totl].k = k;
-		return 0;
+		if (!tu.isLog && !strcmp(tu.pas, pas)){
+		//	user[k].isLog = 1;
+			tu.isLog = 1;
+			user.update_data(k, tu);
+			
+			tl.k = k;
+			add_to_file3(tl, ++totl, "lo.txt");
+		//  lo[++totl].k = k;
+			return 0;
+		}
 	}
 	return -1;
 }
@@ -475,9 +480,12 @@ void query_profile(){
 		}
 	}
 
-	if (user.find(c) && user.find(k) && user[c].isLog && 
-		(!strcmp(c.id, k.id) || user[c].pri > user[k].pri)){
-		printf("%s %s %s %d\n", k.id, user[k].name, user[k].mail, user[k].pri);
+	if (user.find(c) && user.find(k)){
+		User cc = user[c];
+		User kk = user[k];
+		if (cc.isLog && (!strcmp(c.id, k.id) || cc.pri > kk.pri)){
+			printf("%s %s %s %d\n", k.id, kk.name, kk.mail, kk.pri);
+		}
 	}
 	else{
 		puts("-1");
@@ -507,10 +515,13 @@ void modify_profile(){
 		}
 	}
 
-	if (user.find(c) && user.find(k) && user[c].isLog &&
-		(!strcmp(c.id, k.id) || user[c].pri > user[k].pri) && user[c].pri > t.pri){
-		user.update_data(k, t);
-		printf("%s %s %s %d\n", k.id, user[k].name, user[k].mail, user[k].pri);
+	if (user.find(c) && user.find(k)){
+		User cc = user[c];
+		User kk = user[k];
+		if (cc.isLog && (!strcmp(c.id, k.id) || cc.pri > kk.pri) && cc.pri > t.pri){
+			user.update_data(k, t);
+			printf("%s %s %s %d\n", k.id, kk.name,kk.mail, kk.pri);
+		}
 	}
 	else{
 		puts("-1");
@@ -1283,20 +1294,17 @@ void buy_ticket(){
 			tu.cnt++;
 			user.update_data(c, tu);
 		//	user[c].cnt++;
-			if (!user[c].fir){
-				tu = user[c];
+			if (!tu.fir){
 				tu.fir = tu.cur = totb;
 				user.update_data(c, tu);
 			//	user[c].fir = user[c].cur = totb;
 			}
 			else{
-				tu = user[c];
 				tu.fir = totb;
 				user.update_data(c, tu);
 			//	user[c].fir = totb;
 				od.nxt = user[c].cur;
 
-				tu = user[c];
 				tu.cur = totb;
 				user.update_data(c, tu);
 			//	user[c].cur = totb;
@@ -1337,9 +1345,10 @@ void query_order(){
 		puts("-1");
 		return;
 	}
-	printf("%d\n", user[k].cnt);
+	User kk = user[k];
+	printf("%d\n", kk.cnt);
 	Order ii;
-	for (int i = user[k].fir; i;){
+	for (int i = kk.fir; i;){
 		ii = get_kth_data<Order>(i,"order.txt");
 		if (ii.ty == 0)
 			printf("[success] ");
@@ -1379,15 +1388,20 @@ int refund_ticket(){
 		}
 	}
 	strcpy(k.id, id);
-
-	if (!user.find(k) || !user[k].isLog)
+	
+		User kk = user[k];
+	if (!user.find(k))
+	{ 
+		kk = user[k];
+		if (!kk.isLog)
 		return -1;
-	if (x < 1 || x > user[k].cnt)
+	}
+	if (x < 1 || x > kk.cnt)
 		return -1;
 	Key ts;
 	int rt;
 	Order ii;
-	for (int i = user[k].fir, j = 1; i; j++, i = ii.nxt){
+	for (int i = kk.fir, j = 1; i; j++, i = ii.nxt){
         ii = get_kth_data<Order>(i,"order.txt");
 		if (j == x){
 			if (ii.ty == 2)
