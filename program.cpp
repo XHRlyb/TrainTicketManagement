@@ -1383,15 +1383,11 @@ void exit(){
 }
 
 int main(){
-	freopen("0.in", "r", stdin);
-	freopen("0_.out", "w", stdout);
 	char s[20];
 	while (scanf("%s", s) != EOF){
 		Tot++;
 //		printf("%d\n", Tot);
 //		cerr << Tot << endl;
-		if (Tot == 625)
-			cerr << '!';
 		switch (s[0]){
 			case 'a':
 				if (s[4] == 'u')
