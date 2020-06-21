@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-#include "BPlus_Tree_8.hpp"
+#include "BPlus_Tree_10.hpp"
 //#include "BPlus_Tree_debug3.hpp"
 
 typedef long long LL;
@@ -309,9 +309,9 @@ public:
 	}
 };
 
-BPlusTree<Key, User> user("a.txt", "b.txt");
-BPlusTree<Key, Train> train("c.txt", "d.txt");
-BPlusTree<Key_, data> sta("e.txt", "f.txt");
+BPlusTree<Key, User> user("a.txt", "b.txt", "c.txt");
+BPlusTree<Key, Train> train("d.txt", "e.txt", "f.txt");
+BPlusTree<Key_, data> sta("g.txt", "h.txt", "i.txt");
 bool isf(0);
 int tota(0), totr(0);
 char q[4], ch;
@@ -1272,6 +1272,8 @@ void query_order(){
 	printf("%d\n", user[k].cnt);
 	for (int i = user[k].fir; i; /*???*/){
 		Order ii = get_kth_data<Order>(i,"order.txt");
+		if (Tot == 731)
+			cerr << i << ' ' << ii.nxt << endl;
 		if (ii.ty == 0)
 			printf("[success] ");
 		else
@@ -1435,7 +1437,7 @@ int main(){
 	while (scanf("%s", s) != EOF){
 		Tot++;
 //		printf("%d\n", Tot);
-//		cerr << Tot << endl;
+		cerr << Tot << endl;
 //		if (Tot == 625)
 //			cerr << '!';
 		switch (s[0]){
