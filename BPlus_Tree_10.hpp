@@ -18,7 +18,7 @@ const int Max_key_num = 2 * t - 1;
 const int Min_child_num = Min_key_num + 1;
 const int Max_child_num = Max_key_num + 1;
 
-const int u = 30;
+const int u = 3;
 const int Min_data_num = u - 1;//21
 const int Max_data_num = 2 * u - 1;//59
 
