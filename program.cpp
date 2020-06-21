@@ -338,7 +338,7 @@ public:
 
 class Train{
 public:
-	int num, seat, pri[N], r[N], t[N], s[N], p[N], dm[2][N];
+	int num, seat, pri[N], r[N], p[N], dm[2][N];
 	int fir[N], cur[N];
 	char sta[N][K2], ty[3];
 	tim st, ar[N], lv[N];
@@ -1306,14 +1306,20 @@ void buy_ticket(){
 			if (!od.ty)
 				return;
 			if (!train[k].fir[de]){
-				train[k].fir[de] = train[k].cur[de] = totb;
+				Train ttt = train[k];
+				ttt.fir[de] = ttt.cur[de] = totb;
+				train.update_data(k, ttt);
+			//	train[k].fir[de] = train[k].cur[de] = totb;
 			}
 			else{
 				Order ood = get_kth_data<Order>(train[k].cur[de],"order.txt");
 				ood.nxt_ = totb;
 				add_to_file3(ood,train[k].cur[de],"order.txt");
 				od.pre_ = train[k].cur[de];
-				train[k].cur[de] = totb;
+				Train ttt = train[k];
+				ttt.cur[de] = totb;
+				train.update_data(k, ttt);
+			//	train[k].cur[de] = totb;
 			}
 			add_to_file3(od,totb,"order.txt");
 			return;
@@ -1381,8 +1387,9 @@ int refund_ticket(){
 		return -1;
 	Key ts;
 	int rt;
-	for (int i = user[k].fir, j = 1; i; j++){
-        Order ii = get_kth_data<Order>(i,"order.txt");
+	Order ii;
+	for (int i = user[k].fir, j = 1; i; j++, i = ii.nxt){
+        ii = get_kth_data<Order>(i,"order.txt");
 		if (j == x){
 			if (ii.ty == 2)
 				return -1;
@@ -1401,11 +1408,15 @@ int refund_ticket(){
 			}
 
 			bool fl;
-			for (int j = train[ts].fir[ii.d]; j; ){
-				Order jj = get_kth_data<Order>(j,"order.txt");
+			Order jj;
+			for (int j = train[ts].fir[ii.d]; j; j = jj.nxt_){
+				jj = get_kth_data<Order>(j,"order.txt");
 				if (jj.ty != 1){
 					if (!jj.pre_){
-						train[ts].fir[ii.d] = jj.nxt_;
+						Train ttt = train[ts];
+						ttt.fir[ii.d] = jj.nxt_;
+						train.update_data(ts, ttt);
+					//	train[ts].fir[ii.d] = jj.nxt_;
 						Order od = get_kth_data<Order>(jj.nxt_,"order.txt");
 						od.pre_ = 0;
 						add_to_file3(od, jj.nxt_,"order.txt");
@@ -1445,7 +1456,10 @@ int refund_ticket(){
 				jj.ty = 0;
 				if (!jj.pre_){
 					Order ood = get_kth_data<Order>(jj.nxt_,"order.txt");
-					train[ts].fir[ii.d] = jj.nxt_;
+					Train ttt = train[ts];
+					ttt.fir[ii.d] = jj.nxt_;
+					train.update_data(ts, ttt);
+				//	train[ts].fir[ii.d] = jj.nxt_;
 					ood.pre_ = 0;
 					add_to_file3(ood, jj.nxt_,"order.txt");
 				}
@@ -1466,11 +1480,9 @@ int refund_ticket(){
 					}
 				}
 				add_to_file3(jj, j,"order.txt");
-				j = jj.nxt_;
 			}
 			return 0;
         }
-		i = ii.nxt;
     }
 	return -1;
 }
@@ -1501,8 +1513,8 @@ int main(){
 	totb = get_kth_data<int>(3, "init.txt");
 	totr = get_kth_data<int>(4, "init.txt");
 
-//	freopen("1.in", "r", stdin);
-//	freopen("1_.out", "w", stdout);
+	freopen("34.in", "r", stdin);
+	freopen("34_.out", "w", stdout);
 	char s[20];
 
 	while (scanf("%s", s) != EOF){
@@ -1510,7 +1522,7 @@ int main(){
 //		if (user.find(k) && Tot <= 50)
 //			cerr << Tot - 1 << ' ' << user[k].pri << endl;
 //		printf("%d\n", Tot);
-//		cerr << Tot << endl;
+		cerr << Tot << endl;
 //		if (Tot == 154)
 //			cerr << '!';
 		switch (s[0]){
